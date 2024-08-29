@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Rating, Table, Tooltip } from "flowbite-react";
 import { BsClipboard2, BsClipboard2CheckFill, BsTrash } from "react-icons/bs";
-import { Nip87MintInfo } from "@/types";
+import { Nip87Kinds, Nip87MintInfo, Nip87MintTypes } from "@/types";
 import { useNdk } from "@/hooks/useNdk";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -78,6 +78,12 @@ const MintsRowItem = ({ mint }: { mint: Nip87MintInfo }) => {
     );
   };
 
+  let mintType: Nip87MintTypes =
+    mint.rawEvent.kind === Nip87Kinds.FediInfo ||
+    (mint.mintPubkey && !mint.mintUrl)
+      ? Nip87MintTypes.Fedimint
+      : Nip87MintTypes.Cashu;
+
   return (
     <>
       <Table.Row className="dark:bg-gray-800">
@@ -140,7 +146,11 @@ const MintsRowItem = ({ mint }: { mint: Nip87MintInfo }) => {
               />
             </Tooltip>
           ) : (
-            <ReviewMintButton mint={mint} text="Add Review" />
+            <ReviewMintButton
+              mint={mint}
+              text="Add Review"
+              mintType={mintType}
+            />
           )}
         </Table.Cell>
       </Table.Row>

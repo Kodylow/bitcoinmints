@@ -17,15 +17,17 @@ import { RootState } from "@/redux/store";
 const ReviewMintButton = ({
   mint,
   text,
+  mintType,
 }: {
   mint?: Nip87MintInfo;
   text: string;
+  mintType: Nip87MintTypes;
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mintUrl, setMintUrl] = useState(mint?.mintUrl || "");
   const [mintPubkey, setMintPubkey] = useState(mint?.mintPubkey || "");
   const [inviteCodes, setInviteCodes] = useState<string[]>(
-    mint?.inviteCodes || [],
+    mint?.inviteCodes || []
   );
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
@@ -80,16 +82,12 @@ const ReviewMintButton = ({
 
     setIsProcessing(true);
     let mintToReview: Nip87MintInfo | Nip87ReccomendationData;
-    let mintType: Nip87MintTypes = Nip87MintTypes.Cashu;
     if (mint) {
       mintToReview = mint;
-      if (mint.rawEvent.kind === Nip87Kinds.FediInfo) {
-        mintType = Nip87MintTypes.Fedimint;
-      }
-    } else if (mintPubkey && !mintUrl) {
-      // this means the mint is a fedimint mint
-      mintType = Nip87MintTypes.Fedimint;
-      const mintName = `Fedimint ${mintPubkey.slice(0, 3)}...${mintPubkey.slice(-3)}`;
+    } else if (mintType === Nip87MintTypes.Fedimint) {
+      const mintName = `Fedimint ${mintPubkey.slice(0, 3)}...${mintPubkey.slice(
+        -3
+      )}`;
       mintToReview = {
         inviteCodes: inviteCodes,
         supportedNuts: "undefined",
@@ -98,7 +96,7 @@ const ReviewMintButton = ({
       };
     } else if (mintData.find((mint) => mint.url === mintUrl)) {
       const { supportedNuts, name: mintName } = mintData.find(
-        (mint) => mint.url === mintUrl,
+        (mint) => mint.url === mintUrl
       )!;
       mintToReview = { mintUrl, supportedNuts, mintName };
     } else {
@@ -120,7 +118,7 @@ const ReviewMintButton = ({
       mintToReview,
       mintType,
       rating,
-      review,
+      review
     );
 
     dispatch(
@@ -133,7 +131,7 @@ const ReviewMintButton = ({
             inviteCodes: mintToReview.inviteCodes || [],
           },
         ],
-      }),
+      })
     );
     await reviewEvent.publish();
     console.log("Review event", reviewEvent.rawEvent());
@@ -152,6 +150,7 @@ const ReviewMintButton = ({
       <ListReviewModal
         show={isModalOpen}
         onClose={handleModalClose}
+        mintType={mintType}
         mintPubkey={mint?.mintPubkey ? mint?.mintPubkey : mintPubkey}
         setMintPubkey={mint?.mintPubkey ? () => {} : setMintPubkey}
         mintUrl={mint?.mintUrl ? mint?.mintUrl : mintUrl}
@@ -163,8 +162,6 @@ const ReviewMintButton = ({
         review={review}
         setReview={setReview}
         isProcessing={isProcessing}
-        // inviteCodes={mint?.inviteCodes ? mint?.inviteCodes : inviteCodes}
-        // setInviteCodes={mint?.inviteCodes ? () => {} : setInviteCodes}
         inviteCode=""
         setInviteCode={() => {}}
       />
